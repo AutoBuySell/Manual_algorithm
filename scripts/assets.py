@@ -11,15 +11,16 @@ class Equity():
     symbol: (ticker) alphabet abbreviation for a specific stock
     threshold: minimum percentage of value change to decide buy or sell
     duration: minimum duration of consistency of value change to decide buy or sell
+    thr_grad: minimum average of gradient to decide buy or sell
     rebound: gradient of change as a trigger of action
     limit: maximum amount of total value per action
     '''
     def __init__(
         self,
         symbol: str,
-        threshold: float = 0.1,
+        threshold: float = 0.03,
         duration: int = 2,
-        thr_grad: float = 0.02,
+        thr_grad: float = 0.01,
         rebound: float = 0,
         limit: int = 1000,
     ) -> None:
@@ -34,9 +35,11 @@ class Equity():
         self.thr_grad = thr_grad
         self.reb = rebound
         self.limit = limit
+        self.thr_release = threshold
+        self.reb_release = rebound
 
     def __repr__(self) -> str:
-        return f'symbol: {self.symbol}, thresholds: {self.thr_buy, self.thr_sell}, duration: {self.dur}, gradient_threshold: {self.thr_grad}, rebound: {self.reb}, limit: {self.limit}.'
+        return f'symbol: {self.symbol}, thresholds: {self.thr_buy, self.thr_sell}, duration: {self.dur}, gradient_threshold: {self.thr_grad}, rebound: {self.reb}, limit: {self.limit}, release_threshold: {self.thr_release}, release_rebound: {self.reb_release}.'
 
     def load(
         self,
@@ -61,6 +64,8 @@ class Equity():
             self.thr_grad = setting['thr_grad'].iloc[-1]
             self.reb = setting['rebound'].iloc[-1]
             self.limit = setting['limit'].iloc[-1]
+            self.thr_release = setting['thr_release'].iloc[-1]
+            self.reb_release = setting['reb_release'].iloc[-1]
 
     def save(
         self,
@@ -80,8 +85,8 @@ class Equity():
         filewritingdate = today.strftime('%y') + today.strftime('%m') + today.strftime('%d')
 
         new_setting = pd.DataFrame(
-            [[self.thr_buy, self.thr_sell, self.dur, self.thr_grad, self.reb, self.limit]],
-            columns=['thr_buy', 'thr_sell', 'duration', 'thr_grad', 'rebound', 'limit']
+            [[self.thr_buy, self.thr_sell, self.dur, self.thr_grad, self.reb, self.limit, self.thr_release, self.reb_release]],
+            columns=['thr_buy', 'thr_sell', 'duration', 'thr_grad', 'rebound', 'limit', 'thr_release', 'reb_release']
         )
 
         prev_docs = glob.glob(str(path) + '/' + self.symbol + f'_{filewritingdate}_settings.csv')

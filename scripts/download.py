@@ -18,7 +18,7 @@ def download1mdata(symbol):
 
 def download5mdata(symbol):
     today = datetime.datetime.now()
-    startdate = today - datetime.timedelta(days=30)
+    startdate = today - datetime.timedelta(days=29)
     filewritingdate = today.strftime('%y') + today.strftime('%m') + today.strftime('%d')
 
     data = yf.download(
@@ -40,3 +40,19 @@ def updateShortPeriodData():
       download5mdata(sb)
       download1mdata(sb)
   print('Done')
+
+def download30mdata(symbol):
+    today = datetime.datetime.now()
+    startdate = today - datetime.timedelta(days=59)
+    filewritingdate = today.strftime('%y') + today.strftime('%m') + today.strftime('%d')
+
+    data = yf.download(
+        tickers=symbol,
+        start=f"{startdate.strftime('%Y')}-{startdate.strftime('%m')}-{startdate.strftime('%d')}",
+        end=f"{today.strftime('%Y')}-{today.strftime('%m')}-{today.strftime('%d')}",
+        interval='30m'
+    )
+    data = pd.DataFrame(data)
+
+    pd.DataFrame.to_csv(data, f'./data/market_data/{symbol}_{filewritingdate}_30m.csv', sep=',')
+    print(f'Saved {symbol} 30 minute interval data.')
