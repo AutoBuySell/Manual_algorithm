@@ -1,98 +1,86 @@
-from pathlib import Path
-import glob
 import pandas as pd
-import datetime
 
-class Equity():
+import json
+import os
+
+class Equity_Manual_v1():
     '''
     Equity class has its own history and properties for deciding to open or close positions of a specific stock.
 
     - parameters
     symbol: (ticker) alphabet abbreviation for a specific stock
-    threshold: minimum percentage of value change to decide buy or sell
-    duration: minimum duration of consistency of value change to decide buy or sell
-    thr_grad: minimum average of gradient to decide buy or sell
-    rebound: gradient of change as a trigger of action
-    limit: maximum amount of total value per action
+    settings:
+        threshold: minimum percentage of value change to decide buy or sell
+        duration: minimum duration of consistency of value change to decide buy or sell
+        thr_grad: minimum average of gradient to decide buy or sell
+        rebound: gradient of change as a trigger of action
+        limit: maximum amount of total value per action
     '''
     def __init__(
         self,
         symbol: str,
-        threshold: float = 0.03,
-        duration: int = 2,
-        thr_grad: float = 0.01,
-        rebound: float = 0,
-        limit: int = 1000,
     ) -> None:
-        if not (0.02 <= threshold <= 1):
-            threshold = 0.1
-        if duration <= 0:
-            duration = 2
         self.symbol = symbol
-        self.thr_buy = threshold
-        self.thr_sell = threshold
-        self.dur = duration
-        self.thr_grad = thr_grad
-        self.reb = rebound
-        self.limit = limit
-        self.thr_release = threshold
-        self.reb_release = rebound
+        self.data = None
+        self.start_point = 0
+
+        if os.path.isfile('data/setting_data/' + self.symbol + '_settings.json'):
+            with open('data/setting_data/' + self.symbol + '_settings.json', 'r') as fp:
+                self.settings = json.load(fp)
+        else:
+            print('[Warning]', self.symbol, 'has no setting files. The default settings will be used instead.')
+            with open('data/setting_data/default_settings.json', 'r') as fp:
+                self.settings = json.load(fp)
+            self.set()
+
+        self.check_data()
 
     def __repr__(self) -> str:
-        return f'symbol: {self.symbol}, thresholds: {self.thr_buy, self.thr_sell}, duration: {self.dur}, gradient_threshold: {self.thr_grad}, rebound: {self.reb}, limit: {self.limit}, release_threshold: {self.thr_release}, release_rebound: {self.reb_release}.'
+        return f'symbol: {self.symbol}, settings: {self.settings}.'
 
-    def load(
+    def check_data(
         self,
-        path: Path or str
     ) -> None:
-        '''
-        load settings of a specific stock from given path
-        if multiple settings exist, load the most recent one
+        data_path = 'data/market_data/' + self.symbol + '_current_' + self.settings['data_interval'] + '.csv'
+        if os.path.isfile(data_path):
+            if self.data is not None:
+                temp_data_pd = pd.read_csv(data_path)
+                if temp_data_pd['Datetime'].iloc[-1] == self.data['Datetime'].iloc[-1]:
+                    return False
+                else:
+                    self.data = temp_data_pd
+                    return True
+            else:
+                self.data = pd.read_csv(data_path)
 
-        - parameters
-        path: relative or absolute path of source folder
-        '''
-        if isinstance(path, str):
-            path = Path(path)
+        return False
 
-        recent_docs = glob.glob(str(path) + '/' + self.symbol + '_*_settings.csv')
-        if recent_docs:
-            setting = pd.read_csv(recent_docs[-1], sep=',')
-            self.thr_buy = setting['thr_buy'].iloc[-1]
-            self.thr_sell = setting['thr_sell'].iloc[-1]
-            self.dur = setting['duration'].iloc[-1]
-            self.thr_grad = setting['thr_grad'].iloc[-1]
-            self.reb = setting['rebound'].iloc[-1]
-            self.limit = setting['limit'].iloc[-1]
-            self.thr_release = setting['thr_release'].iloc[-1]
-            self.reb_release = setting['reb_release'].iloc[-1]
-
-    def save(
+    def load_data(
         self,
-        path: Path or str
+        date: str,
     ) -> None:
-        '''
-        save settings of a specific stock to given path
-        saved date is recorded at file name
+        data_path = 'data/market_data/' + self.symbol + '_' + date + '_' + self.settings['data_interval'] + '.csv'
+        if os.path.isfile(data_path):
+            self.data = pd.read_csv(data_path)
+        else:
+            self.data = None
+            print('No data available!')
 
-        - parameters
-        path: relative or absolute path of target folder
-        '''
-        if isinstance(path, str):
-            path = Path(path)
+        self.start_point = 0
 
-        today = datetime.datetime.now()
-        filewritingdate = today.strftime('%y') + today.strftime('%m') + today.strftime('%d')
+    def set(
+        self,
+        **args,
+    ) -> None:
+        for key, val in args.items():
+            if key in self.settings:
+                if key == 'threshold' and not 0.02 <= val <= 1:
+                    self.settings[key] = 0.1
+                elif key == 'duration' and val <= 0:
+                    self.settings[key] = 2
+                else:
+                    self.settings[key] = val
 
-        new_setting = pd.DataFrame(
-            [[self.thr_buy, self.thr_sell, self.dur, self.thr_grad, self.reb, self.limit, self.thr_release, self.reb_release]],
-            columns=['thr_buy', 'thr_sell', 'duration', 'thr_grad', 'rebound', 'limit', 'thr_release', 'reb_release']
-        )
+        with open('data/setting_data/' + self.symbol + '_settings.json', 'w', encoding='utf-8') as fp:
+            json.dump(self.settings, fp, indent='\t', ensure_ascii=False)
 
-        prev_docs = glob.glob(str(path) + '/' + self.symbol + f'_{filewritingdate}_settings.csv')
-
-        if prev_docs:
-            setting = pd.read_csv(prev_docs[-1], sep=',', index_col=0)
-            new_setting = pd.concat([setting, new_setting])
-
-        new_setting.to_csv(str(path) + '/' + self.symbol + f'_{filewritingdate}_settings.csv', sep=',')
