@@ -1,3 +1,11 @@
+## CUSTOM
+
+# Downloaded data
+/data/market_data
+/data/setting_data
+
+#################
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -127,7 +135,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Downloaded data
-/data/market_data
-/data/setting_data
