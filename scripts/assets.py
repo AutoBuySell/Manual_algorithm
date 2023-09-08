@@ -33,7 +33,7 @@ class Equity_Manual_v1():
                 self.settings = json.load(fp)
             self.set()
 
-        self.check_data()
+        self.check_data() # Initialize self.data
 
     def __repr__(self) -> str:
         return f'symbol: {self.symbol}, settings: {self.settings}.'
