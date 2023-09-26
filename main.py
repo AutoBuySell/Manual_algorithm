@@ -2,8 +2,9 @@ from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from apps.subapp import sub
+import json
 
+from scripts.requests import req_data_realtime
 from scripts.assets import Equity_Manual_v1
 from scripts.judge import getNewPosition_Manual_v1, makeOrders_Manual_v1
 
@@ -33,9 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-obj_assets = {}
-
-app.mount('/sub', sub)
+OBJ_ASSETS = {}
 
 @app.get('/')
 def hello_code():
@@ -45,22 +44,30 @@ def hello_code():
     )
 
 @app.get('/check')
-def check_update_and_decide(equities: list):
-    symbols = []
-    orders = []
+def check_update_and_decide(symbols: str):
+    target_symbols = json.loads(symbols)
 
-    for eq in equities:
-        if eq not in obj_assets:
-            obj_assets[eq] = Equity_Manual_v1(eq)
-        if obj_assets[eq].check_data():
-            result = getNewPosition_Manual_v1(obj_assets[eq])
+    req_data_realtime(target_symbols)
+
+    orders = ([], [])
+
+    for symbol in target_symbols:
+        if symbol not in OBJ_ASSETS:
+            OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
+
+        obj_symbol = OBJ_ASSETS[symbol]
+        if obj_symbol.check_data():
+            result = getNewPosition_Manual_v1(obj_symbol)
             if result[0]:
-                symbols.append(eq)
-                orders.append('buy')
+                orders[0].append(symbol)
+                orders[1].append('buy')
             elif result[1]:
-                symbols.append(eq)
-                orders.append('sell')
+                orders[0].append(symbol)
+                orders[1].append('sell')
 
-    makeOrders_Manual_v1(assets=symbols, orders=orders)
+    makeOrders_Manual_v1(orders=orders)
 
-    
+    return JSONResponse(
+        content={"message": "success"},
+        status_code=200,
+    )

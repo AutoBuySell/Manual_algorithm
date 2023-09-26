@@ -3,6 +3,9 @@ import pandas as pd
 import json
 import os
 
+PATH_MARKET_DATA = '../data/market_data/'
+PATH_SETTING_DATA = '../data/setting_data/'
+
 class Equity_Manual_v1():
     '''
     Equity class has its own history and properties for deciding to open or close positions of a specific stock.
@@ -24,44 +27,43 @@ class Equity_Manual_v1():
         self.data = None
         self.start_point = 0
 
-        if os.path.isfile('data/setting_data/' + self.symbol + '_settings.json'):
-            with open('data/setting_data/' + self.symbol + '_settings.json', 'r') as fp:
+        self.data_path = PATH_MARKET_DATA + self.symbol + '.csv'
+
+        if os.path.isfile(PATH_SETTING_DATA + self.symbol + '_settings.json'):
+            with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'r') as fp:
                 self.settings = json.load(fp)
         else:
             print('[Warning]', self.symbol, 'has no setting files. The default settings will be used instead.')
-            with open('data/setting_data/default_settings.json', 'r') as fp:
+            with open(PATH_SETTING_DATA + 'default_settings.json', 'r') as fp:
                 self.settings = json.load(fp)
             self.set()
 
-        self.check_data() # Initialize self.data
+        self.load_data() # Initialize self.data
 
     def __repr__(self) -> str:
-        return f'symbol: {self.symbol}, settings: {self.settings}.'
+        return '{' + f'symbol: {self.symbol}, settings: {self.settings}' + '}'
 
     def check_data(
         self,
     ) -> None:
-        data_path = 'data/market_data/' + self.symbol + '_current_' + self.settings['data_interval'] + '.csv'
-        if os.path.isfile(data_path):
+        if os.path.isfile(self.data_path):
             if self.data is not None:
-                temp_data_pd = pd.read_csv(data_path)
-                if temp_data_pd['Datetime'].iloc[-1] == self.data['Datetime'].iloc[-1]:
+                temp_data_pd = pd.read_csv(self.data_path)
+                if temp_data_pd['t'].iloc[-1] == self.data['t'].iloc[-1]:
                     return False
                 else:
                     self.data = temp_data_pd
                     return True
             else:
-                self.data = pd.read_csv(data_path)
+                self.data = pd.read_csv(self.data_path)
 
         return False
 
     def load_data(
         self,
-        date: str,
     ) -> None:
-        data_path = 'data/market_data/' + self.symbol + '_' + date + '_' + self.settings['data_interval'] + '.csv'
-        if os.path.isfile(data_path):
-            self.data = pd.read_csv(data_path)
+        if os.path.isfile(self.data_path):
+            self.data = pd.read_csv(self.data_path)
         else:
             self.data = None
             print('No data available!')
@@ -81,6 +83,6 @@ class Equity_Manual_v1():
                 else:
                     self.settings[key] = val
 
-        with open('data/setting_data/' + self.symbol + '_settings.json', 'w', encoding='utf-8') as fp:
+        with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'w', encoding='utf-8') as fp:
             json.dump(self.settings, fp, indent='\t', ensure_ascii=False)
 
