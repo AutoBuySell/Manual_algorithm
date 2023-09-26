@@ -38,21 +38,27 @@ def getNewPosition_Manual_v1(asset, test_end_point = 0):
 
   return thr_buy_sig_on and reb_buy_sig_on, thr_sell_sig_on and reb_sell_sig_on
 
-def makeOrders_Manual_v1(assets, orders):
+def makeOrders_Manual_v1(orders):
   '''
-  assets: list of assets to order
-  orders: buy or sell orders per asset
+  orders: (list of symbols to order, buy or sell orders per asset)
   '''
+
+  symbols, sides = orders
 
   buy_power = get_buy_power()
   current_positions = get_current_positions()
 
-  for i in range(len(assets)):
-    if orders[i] == 'sell':
-      asset = assets[i]
-      if asset in current_positions:
-        sell_order(asset, current_positions[asset])
+  print('buy_power: ', buy_power)
+  print('current_positions: ', current_positions)
+
+  for i in range(len(symbols)):
+    if sides[i] == 'sell':
+      symbol = symbols[i]
+      if symbol in current_positions:
+        sell_order(symbol, current_positions[symbol])
+        print('sell: ', symbol)
     else:
-      buy_order(asset, buy_power / 5)
+      buy_order(symbol, buy_power / 5)
+      print('buy: ', symbol, ', buy_power: ', buy_power / 5)
       buy_power = buy_power - buy_power / 5
 
