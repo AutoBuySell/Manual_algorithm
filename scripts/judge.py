@@ -9,7 +9,7 @@ def getNewPosition_Manual_v1(asset, test_end_point = 0):
   test_end_point: set to 0 for real-time judging, or set as a number larger than 0 for testing
   '''
 
-  data_np = np.array(asset.data['Open'])
+  data_np = np.array(asset.data['o'])
 
   # For testing, use sliced data
   if test_end_point != 0:
@@ -34,7 +34,7 @@ def getNewPosition_Manual_v1(asset, test_end_point = 0):
 
   # If a buying or selling point has been appeared, renew test_end_point
   if (thr_buy_sig_on and reb_buy_sig_on) or (thr_sell_sig_on and reb_sell_sig_on):
-    asset.start_point = len(asset.data['Open']) - 2 if test_end_point == 0 else test_end_point
+    asset.start_point = len(asset.data['o']) - 2 if test_end_point == 0 else test_end_point
 
   return thr_buy_sig_on and reb_buy_sig_on, thr_sell_sig_on and reb_sell_sig_on
 
