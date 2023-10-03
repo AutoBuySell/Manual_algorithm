@@ -43,7 +43,7 @@ def hello_code():
         status_code=200,
     )
 
-@app.get('/check')
+@app.get('/alarm')
 def check_update_and_decide(symbols: str):
     target_symbols = json.loads(symbols)
 
@@ -67,6 +67,13 @@ def check_update_and_decide(symbols: str):
 
     makeOrders_Manual_v1(orders=orders)
 
+    return JSONResponse(
+        content={"message": "success"},
+        status_code=200,
+    )
+
+@app.get('/log')
+def get_logs():
     return JSONResponse(
         content={"message": "success"},
         status_code=200,
