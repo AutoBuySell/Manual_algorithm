@@ -13,29 +13,58 @@ headers = {
   'APCA-API-SECRET-KEY': os.getenv('ALPACA_PAPER_KEY_SECRET'),
 }
 
-def buy_order(asset, buy_power):
+def buy_order(symbol, qty):
   payload = {
     'side': 'buy',
     'type': 'market',
     'time_in_force': 'day',
-    'symbol': asset,
-    'notional': buy_power,
+    'symbol': symbol,
+    'qty': qty,
   }
 
-  response = requests.post(baseurl + '/orders', json=payload, headers=headers).json()
+  response = requests.post(
+    baseurl + '/orders',
+    json=payload,
+    headers=headers
+  ).json()
 
-  return response
+  orderInfo = {
+    'orderId': response['id'],
+  }
 
-def sell_order(asset, qty):
+  return orderInfo
+
+def sell_order(symbol, qty):
   payload = {
     'side': 'sell',
     'type': 'market',
     'time_in_force': 'day',
-    'symbol': asset,
+    'symbol': symbol,
     'qty': qty,
   }
 
-  response = requests.post(baseurl + '/orders', json=payload, headers=headers).json()
+  response = requests.post(
+    baseurl + '/orders',
+    json=payload,
+    headers=headers
+  ).json()
 
-  return response
+  orderInfo = {
+    'orderId': response['id'],
+  }
 
+  return orderInfo
+
+def get_order(orderId: str):
+  response = requests.get(
+    baseurl + '/orders' + f'/{orderId}',
+    headers=headers
+  ).json()
+
+  new_info = {
+    'status': response['status'],
+    'filledQty': response['filled_qty'],
+    'filledAvgPrice': response['filled_avg_price'],
+  }
+
+  return new_info

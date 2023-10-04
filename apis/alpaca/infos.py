@@ -15,9 +15,9 @@ headers = {
 def get_buy_power():
   response = requests.get(baseurl + '/account', headers=headers).json()
 
-  return response['buying_power']
+  return float(response['buying_power'])
 
 def get_current_positions():
   response = requests.get(baseurl + '/positions', headers=headers).json()
 
-  return {r['symbol']: r['qty'] for r in response if r['side'] == 'long'}
+  return {r['symbol']: float(r['qty']) for r in response if r['side'] == 'long'}

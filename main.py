@@ -7,6 +7,7 @@ import json
 from scripts.requests import req_data_realtime
 from scripts.assets import Equity_Manual_v1
 from scripts.judge import getNewPosition_Manual_v1, makeOrders_Manual_v1
+from scripts.log import get_order_log, update_order_log
 
 tags_metadata = [
     {
@@ -43,7 +44,7 @@ def hello_code():
         status_code=200,
     )
 
-@app.get('/check')
+@app.get('/alarm')
 def check_update_and_decide(symbols: str):
     target_symbols = json.loads(symbols)
 
@@ -65,9 +66,34 @@ def check_update_and_decide(symbols: str):
                 orders[0].append(symbol)
                 orders[1].append('sell')
 
-    makeOrders_Manual_v1(orders=orders)
+    makeOrders_Manual_v1(orders=orders, obj_assets=OBJ_ASSETS)
 
     return JSONResponse(
         content={"message": "success"},
+        status_code=200,
+    )
+
+@app.get('/logs')
+def get_logs():
+    logs = get_logs()
+
+    return JSONResponse(
+        content={
+            "message": "success",
+            "data": logs,
+        },
+        status_code=200,
+    )
+
+@app.put('/logs')
+def update_logs():
+    update_order_log()
+    logs = get_logs()
+
+    return JSONResponse(
+        content={
+            "message": "success",
+            "data": logs,
+        },
         status_code=200,
     )
