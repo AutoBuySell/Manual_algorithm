@@ -7,8 +7,8 @@ from apis.alpaca.orders import get_order
 LOG_TEMPLATE = {
   'orderId': '',
   'date_server': '2023-01-01T00:00:00Z',
-  'status': 'open',
-  'symbol': 'TSLA',
+  'status': 'new',
+  'symbol': 'AAPL',
   'orderQty': '1',
   'orderPrice': '1',
   'filledQty': '0',
@@ -16,6 +16,8 @@ LOG_TEMPLATE = {
 }
 
 PATH_ORDER_LOGS = '../data/log_data/order_logs.csv'
+
+TERMINATED_STATUS = ['filled', 'canceled', 'expired', 'rejected']
 
 def create_order_log(orderId: str, symbol: str, qty: int, price: float):
   new_log = LOG_TEMPLATE.copy()
@@ -38,7 +40,7 @@ def create_order_log(orderId: str, symbol: str, qty: int, price: float):
 
 def update_order_log():
   logs_pd = pd.read_csv(PATH_ORDER_LOGS)
-  orderIds = logs_pd[logs_pd['status'] == 'open']['orderId']
+  orderIds = logs_pd[logs_pd['status'] not in TERMINATED_STATUS]['orderId']
 
   for orderId in orderIds:
     new_info = get_order(orderId=orderId)
@@ -51,4 +53,6 @@ def update_order_log():
   logs_pd.to_csv(PATH_ORDER_LOGS, index=False)
 
 def get_order_log():
-  pass
+  logs_pd = pd.read_csv(PATH_ORDER_LOGS)
+
+  return logs_pd.to_dict(orient='records')

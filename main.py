@@ -7,6 +7,7 @@ import json
 from scripts.requests import req_data_realtime
 from scripts.assets import Equity_Manual_v1
 from scripts.judge import getNewPosition_Manual_v1, makeOrders_Manual_v1
+from scripts.log import get_order_log, update_order_log
 
 tags_metadata = [
     {
@@ -72,9 +73,27 @@ def check_update_and_decide(symbols: str):
         status_code=200,
     )
 
-@app.get('/log')
+@app.get('/logs')
 def get_logs():
+    logs = get_logs()
+
     return JSONResponse(
-        content={"message": "success"},
+        content={
+            "message": "success",
+            "data": logs,
+        },
+        status_code=200,
+    )
+
+@app.put('/logs')
+def update_logs():
+    update_order_log()
+    logs = get_logs()
+
+    return JSONResponse(
+        content={
+            "message": "success",
+            "data": logs,
+        },
         status_code=200,
     )

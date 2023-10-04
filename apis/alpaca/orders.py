@@ -22,9 +22,17 @@ def buy_order(symbol, qty):
     'qty': qty,
   }
 
-  response = requests.post(baseurl + '/orders', json=payload, headers=headers).json()
+  response = requests.post(
+    baseurl + '/orders',
+    json=payload,
+    headers=headers
+  ).json()
 
-  return response
+  orderInfo = {
+    'orderId': response['id'],
+  }
+
+  return orderInfo
 
 def sell_order(symbol, qty):
   payload = {
@@ -41,7 +49,11 @@ def sell_order(symbol, qty):
     headers=headers
   ).json()
 
-  return response
+  orderInfo = {
+    'orderId': response['id'],
+  }
+
+  return orderInfo
 
 def get_order(orderId: str):
   response = requests.get(

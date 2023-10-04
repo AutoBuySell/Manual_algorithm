@@ -3,6 +3,8 @@ import numpy as np
 from apis.alpaca.infos import get_buy_power, get_current_positions
 from apis.alpaca.orders import buy_order, sell_order
 
+from scripts.log import create_order_log
+
 def getNewPosition_Manual_v1(asset, test_end_point = 0):
   '''
   asset: asset object
@@ -40,7 +42,7 @@ def getNewPosition_Manual_v1(asset, test_end_point = 0):
 
 def makeOrders_Manual_v1(orders, obj_assets):
   '''
-  orders: (list of symbols to order, buy or sell orders per asset)
+  orders: (list of symbols to order, list of 'buy' or 'sell' orders per asset)
   obj_assets: dict of asset objects
   '''
 
@@ -53,15 +55,24 @@ def makeOrders_Manual_v1(orders, obj_assets):
   print('current_positions: ', current_positions)
 
   for i in range(len(symbols)):
+    symbol = symbols[i]
     if sides[i] == 'sell':
-      symbol = symbols[i]
       if symbol in current_positions:
-        sell_order(symbol, current_positions[symbol])
-        print('sell: ', symbol)
+        data_np = np.array(obj_assets[symbol].data['o'])
+        current_price = data_np[-1]
+        qty = current_positions[symbol]
+
+        orderInfo = sell_order(symbol, qty)
+        create_order_log(orderInfo['orderId'], symbol, qty, current_price)
+        print('sell: ', symbol, ', qty: ', qty, ', price: ', current_price)
     else:
       data_np = np.array(obj_assets[symbol].data['o'])
       current_price = data_np[-1]
-      buy_order(symbol, (buy_power / 5) // current_price)
-      print('buy: ', symbol, ', buy_power: ', buy_power / 5)
+      qty = int((buy_power / 5) / current_price)
+
+      orderInfo = buy_order(symbol, qty)
+      create_order_log(orderInfo['orderId'], symbol, qty, current_price)
+      print('buy: ', symbol, ', qty: ', qty, ', price: ', current_price)
+
       buy_power = buy_power - buy_power / 5
 
