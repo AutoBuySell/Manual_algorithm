@@ -2,24 +2,26 @@ import os
 import pandas as pd
 from datetime import datetime
 
+from apis.alpaca.orders import get_order
+
 LOG_TEMPLATE = {
-  'orderNumber': '',
+  'orderId': '',
   'date_server': '2023-01-01T00:00:00Z',
   'status': 'open',
   'symbol': 'TSLA',
-  'orderQty': 1,
-  'orderPrice': 1,
-  'filledQty': 0,
-  'filledAvgPrice': 0,
+  'orderQty': '1',
+  'orderPrice': '1',
+  'filledQty': '0',
+  'filledAvgPrice': '0',
 }
 
 PATH_ORDER_LOGS = '../data/log_data/order_logs.csv'
 
-def create_order_log(orderNumber: str, symbol: str, qty: int, price: float):
+def create_order_log(orderId: str, symbol: str, qty: int, price: float):
   new_log = LOG_TEMPLATE.copy()
   new_log = {
     **new_log,
-    'orderNumber': orderNumber,
+    'orderId': orderId,
     'date_server': datetime.now().isoformat(timespec='milliseconds') + 'Z',
     'symbol': symbol,
     'orderQty': qty,
@@ -34,5 +36,13 @@ def create_order_log(orderNumber: str, symbol: str, qty: int, price: float):
 
   logs_pd.to_csv(PATH_ORDER_LOGS, index=False)
 
-def update_order_log():
-  pass
+def update_order_log(orderId: str):
+  new_info = get_order(orderId=orderId)
+
+  logs_pd = pd.read_csv(PATH_ORDER_LOGS)
+  index = logs_pd[logs_pd['orderId'] == orderId].index
+
+  for key in new_info.keys():
+    logs_pd.loc[index, key] = new_info[key]
+
+  logs_pd.to_csv(PATH_ORDER_LOGS, index=False)

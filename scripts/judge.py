@@ -38,9 +38,10 @@ def getNewPosition_Manual_v1(asset, test_end_point = 0):
 
   return thr_buy_sig_on and reb_buy_sig_on, thr_sell_sig_on and reb_sell_sig_on
 
-def makeOrders_Manual_v1(orders):
+def makeOrders_Manual_v1(orders, obj_assets):
   '''
   orders: (list of symbols to order, buy or sell orders per asset)
+  obj_assets: dict of asset objects
   '''
 
   symbols, sides = orders
@@ -58,7 +59,9 @@ def makeOrders_Manual_v1(orders):
         sell_order(symbol, current_positions[symbol])
         print('sell: ', symbol)
     else:
-      buy_order(symbol, buy_power / 5)
+      data_np = np.array(obj_assets[symbol].data['o'])
+      current_price = data_np[-1]
+      buy_order(symbol, (buy_power / 5) // current_price)
       print('buy: ', symbol, ', buy_power: ', buy_power / 5)
       buy_power = buy_power - buy_power / 5
 

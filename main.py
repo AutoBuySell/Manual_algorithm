@@ -65,7 +65,7 @@ def check_update_and_decide(symbols: str):
                 orders[0].append(symbol)
                 orders[1].append('sell')
 
-    makeOrders_Manual_v1(orders=orders)
+    makeOrders_Manual_v1(orders=orders, obj_assets=OBJ_ASSETS)
 
     return JSONResponse(
         content={"message": "success"},
