@@ -36,13 +36,19 @@ def create_order_log(orderId: str, symbol: str, qty: int, price: float):
 
   logs_pd.to_csv(PATH_ORDER_LOGS, index=False)
 
-def update_order_log(orderId: str):
-  new_info = get_order(orderId=orderId)
-
+def update_order_log():
   logs_pd = pd.read_csv(PATH_ORDER_LOGS)
-  index = logs_pd[logs_pd['orderId'] == orderId].index
+  orderIds = logs_pd[logs_pd['status'] == 'open']['orderId']
 
-  for key in new_info.keys():
-    logs_pd.loc[index, key] = new_info[key]
+  for orderId in orderIds:
+    new_info = get_order(orderId=orderId)
+
+    index = logs_pd[logs_pd['orderId'] == orderId].index
+
+    for key in new_info.keys():
+      logs_pd.loc[index, key] = new_info[key]
 
   logs_pd.to_csv(PATH_ORDER_LOGS, index=False)
+
+def get_order_log():
+  pass
