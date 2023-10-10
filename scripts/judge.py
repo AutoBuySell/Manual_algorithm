@@ -63,7 +63,7 @@ def makeOrders_Manual_v1(orders, obj_assets):
         qty = current_positions[symbol]
 
         orderInfo = sell_order(symbol, qty)
-        create_order_log(orderInfo['orderId'], symbol, qty, current_price)
+        create_order_log(orderInfo['orderId'], 'sell', symbol, qty, current_price)
         print('sell: ', symbol, ', qty: ', qty, ', price: ', current_price)
     else:
       data_np = np.array(obj_assets[symbol].data['o'])
@@ -71,7 +71,7 @@ def makeOrders_Manual_v1(orders, obj_assets):
       qty = int((buy_power / 5) / current_price)
 
       orderInfo = buy_order(symbol, qty)
-      create_order_log(orderInfo['orderId'], symbol, qty, current_price)
+      create_order_log(orderInfo['orderId'], 'buy', symbol, qty, current_price)
       print('buy: ', symbol, ', qty: ', qty, ', price: ', current_price)
 
       buy_power = buy_power - buy_power / 5

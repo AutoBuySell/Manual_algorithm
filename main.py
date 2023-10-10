@@ -75,7 +75,7 @@ def check_update_and_decide(symbols: str):
 
 @app.get('/logs')
 def get_logs():
-    logs = get_logs()
+    logs = get_order_log()
 
     return JSONResponse(
         content={
@@ -88,7 +88,7 @@ def get_logs():
 @app.put('/logs')
 def update_logs():
     update_order_log()
-    logs = get_logs()
+    logs = get_order_log()
 
     return JSONResponse(
         content={
