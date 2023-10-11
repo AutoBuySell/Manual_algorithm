@@ -1,4 +1,5 @@
 import numpy as np
+from datetime import datetime
 
 from apis.alpaca.infos import get_buy_power, get_current_positions
 from apis.alpaca.orders import buy_order, sell_order
@@ -51,8 +52,10 @@ def makeOrders_Manual_v1(orders, obj_assets):
   buy_power = get_buy_power()
   current_positions = get_current_positions()
 
+  print(datetime.today().isoformat())
   print('buy_power: ', buy_power)
   print('current_positions: ', current_positions)
+  print('new orders: ', orders)
 
   for i in range(len(symbols)):
     symbol = symbols[i]
