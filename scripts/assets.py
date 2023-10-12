@@ -5,6 +5,7 @@ import os
 
 PATH_MARKET_DATA = '../data/market_data/'
 PATH_SETTING_DATA = '../data/setting_data/'
+PATH_DEFAULT_SETTING = 'configs/default_settings.json'
 
 class Equity_Manual_v1():
     '''
@@ -34,8 +35,8 @@ class Equity_Manual_v1():
                 self.settings = json.load(fp)
         else:
             print('[Warning]', self.symbol, 'has no setting files. The default settings will be used instead.')
-            with open(PATH_SETTING_DATA + 'default_settings.json', 'r') as fp:
-                self.settings = json.load(fp)
+            with open(PATH_DEFAULT_SETTING, 'r') as fp:
+                self.settings = json.load(fp)['default']
             self.set()
 
         self.load_data() # Initialize self.data
@@ -76,13 +77,13 @@ class Equity_Manual_v1():
     ) -> None:
         for key, val in args.items():
             if key in self.settings:
-                if key == 'threshold' and not 0.02 <= val <= 1:
-                    self.settings[key] = 0.1
-                elif key == 'duration' and val <= 0:
-                    self.settings[key] = 2
-                else:
-                    self.settings[key] = val
+                self.settings[key] = val
 
         with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'w', encoding='utf-8') as fp:
             json.dump(self.settings, fp, indent='\t', ensure_ascii=False)
 
+def get_default_settings():
+    with open(PATH_DEFAULT_SETTING, 'r') as fp:
+        settings = json.load(fp)
+
+    return settings

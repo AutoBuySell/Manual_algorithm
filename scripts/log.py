@@ -7,6 +7,7 @@ from apis.alpaca.orders import get_order
 LOG_TEMPLATE = {
   'orderId': '',
   'date_server': '2023-01-01T00:00:00Z',
+  'side': '',
   'status': 'new',
   'symbol': 'AAPL',
   'orderQty': '1',
@@ -17,14 +18,15 @@ LOG_TEMPLATE = {
 
 PATH_ORDER_LOGS = '../data/log_data/order_logs.csv'
 
-TERMINATED_STATUS = ['filled', 'canceled', 'expired', 'rejected']
+TERMINATED_STATUS = ['filled', 'canceled', 'expired', 'rejected', 'closed']
 
-def create_order_log(orderId: str, symbol: str, qty: int, price: float):
+def create_order_log(orderId: str, side: str, symbol: str, qty: int, price: float):
   new_log = LOG_TEMPLATE.copy()
   new_log = {
     **new_log,
     'orderId': orderId,
     'date_server': datetime.now().isoformat(timespec='milliseconds') + 'Z',
+    'side': side,
     'symbol': symbol,
     'orderQty': qty,
     'orderPrice': price,
@@ -40,7 +42,7 @@ def create_order_log(orderId: str, symbol: str, qty: int, price: float):
 
 def update_order_log():
   logs_pd = pd.read_csv(PATH_ORDER_LOGS)
-  orderIds = logs_pd[logs_pd['status'] not in TERMINATED_STATUS]['orderId']
+  orderIds = logs_pd[~logs_pd['status'].isin(TERMINATED_STATUS)]['orderId']
 
   for orderId in orderIds:
     new_info = get_order(orderId=orderId)

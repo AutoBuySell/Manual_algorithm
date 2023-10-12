@@ -64,7 +64,7 @@ def get_order(orderId: str):
   new_info = {
     'status': response['status'],
     'filledQty': response['filled_qty'],
-    'filledAvgPrice': response['filled_avg_price'],
+    'filledAvgPrice': response['filled_avg_price'] or 0,
   }
 
   return new_info

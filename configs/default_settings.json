@@ -1,0 +1,58 @@
+{
+  "default": {
+    "thr_buy": 0.1,
+    "thr_sell": 0.1,
+    "duration": 24,
+    "thr_grad": 0.02,
+    "rebound": 0,
+    "limit": 1000,
+    "thr_release": 0.1,
+    "reb_release": 0,
+    "data_interval": "5m"
+  },
+  "types": {
+    "thr_buy": "float",
+    "thr_sell": "float",
+    "duration": "int",
+    "thr_grad": "float",
+    "rebound": "float",
+    "limit": "int",
+    "thr_release": "float",
+    "reb_release": "float",
+    "data_interval": "select"
+  },
+  "ranges": {
+    "thr_buy": {
+      "min": 0.02,
+      "max": 1
+    },
+    "thr_sell": {
+      "min": 0.02,
+      "max": 1
+    },
+    "duration": {
+      "min": 1
+    },
+    "thr_grad": {
+      "min": 0.02,
+      "max": 1
+    },
+    "rebound": {
+      "min": 0,
+      "max": 1
+    },
+    "limit": {
+      "min": 1,
+      "max": 10000
+    },
+    "thr_release": {
+      "min": 0.02,
+      "max": 1
+    },
+    "reb_release": {
+      "min": 0,
+      "max": 1
+    },
+    "data_interval": ["5m", "15m", "30m", "1h"]
+  }
+}

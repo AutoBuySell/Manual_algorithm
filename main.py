@@ -1,11 +1,12 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Body
 
 import json
 
 from scripts.requests import req_data_realtime
-from scripts.assets import Equity_Manual_v1
+from scripts.assets import Equity_Manual_v1, get_default_settings
 from scripts.judge import getNewPosition_Manual_v1, makeOrders_Manual_v1
 from scripts.log import get_order_log, update_order_log
 
@@ -75,7 +76,7 @@ def check_update_and_decide(symbols: str):
 
 @app.get('/logs')
 def get_logs():
-    logs = get_logs()
+    logs = get_order_log()
 
     return JSONResponse(
         content={
@@ -88,12 +89,54 @@ def get_logs():
 @app.put('/logs')
 def update_logs():
     update_order_log()
-    logs = get_logs()
+    logs = get_order_log()
 
     return JSONResponse(
         content={
             "message": "success",
             "data": logs,
+        },
+        status_code=200,
+    )
+
+@app.get('/settings')
+def get_setting_lists():
+    settings = get_default_settings()
+
+    return JSONResponse(
+        content={
+            "message": "success",
+            "data": settings,
+        },
+        status_code=200,
+    )
+
+@app.get('/settings/{symbol}')
+def get_setting_values(symbol: str):
+    if symbol not in OBJ_ASSETS:
+        OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
+    asset = OBJ_ASSETS[symbol]
+
+    return JSONResponse(
+        content={
+            "message": "success",
+            "data": asset.settings,
+        },
+        status_code=200,
+    )
+
+@app.put('/settings/{symbol}')
+def set_setting_values(symbol: str, args: object = Body(embed=True)):
+    if symbol not in OBJ_ASSETS:
+        OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
+    asset = OBJ_ASSETS[symbol]
+
+    asset.set(**args)
+
+    return JSONResponse(
+        content={
+            "message": "success",
+            "data": asset.settings,
         },
         status_code=200,
     )
