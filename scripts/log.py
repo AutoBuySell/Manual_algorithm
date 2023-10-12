@@ -18,7 +18,7 @@ LOG_TEMPLATE = {
 
 PATH_ORDER_LOGS = '../data/log_data/order_logs.csv'
 
-TERMINATED_STATUS = ['filled', 'canceled', 'expired', 'rejected']
+TERMINATED_STATUS = ['filled', 'canceled', 'expired', 'rejected', 'closed']
 
 def create_order_log(orderId: str, side: str, symbol: str, qty: int, price: float):
   new_log = LOG_TEMPLATE.copy()
@@ -42,7 +42,7 @@ def create_order_log(orderId: str, side: str, symbol: str, qty: int, price: floa
 
 def update_order_log():
   logs_pd = pd.read_csv(PATH_ORDER_LOGS)
-  orderIds = logs_pd[logs_pd['status'].isin(TERMINATED_STATUS)]['orderId']
+  orderIds = logs_pd[~logs_pd['status'].isin(TERMINATED_STATUS)]['orderId']
 
   for orderId in orderIds:
     new_info = get_order(orderId=orderId)
