@@ -1,14 +1,18 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body
 
 import json
+import traceback
 
-from scripts.requests import req_data_realtime
+from apps.error import CustomError, DataReqError
+
 from scripts.assets import Equity_Manual_v1, get_default_settings
 from scripts.judge import getNewPosition_Manual_v1, makeOrders_Manual_v1
 from scripts.log import get_order_log, update_order_log
+
+from apis.data.data import req_data_realtime
 
 tags_metadata = [
     {
@@ -38,6 +42,20 @@ app.add_middleware(
 
 OBJ_ASSETS = {}
 
+@app.exception_handler(CustomError)
+def custom_error_handler(request: Request, exc: CustomError):
+    return JSONResponse(
+        content={"message": f"{exc.message} in {exc.detail}"},
+        status_code=exc.status_code
+    )
+
+@app.exception_handler(DataReqError)
+def data_requirement_error_handler(request: Request, exc: DataReqError):
+    return JSONResponse(
+        content={"message": exc.message},
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
+
 @app.get('/')
 def hello_code():
     return JSONResponse(
@@ -48,31 +66,45 @@ def hello_code():
 @app.get('/alarm')
 def check_update_and_decide(symbols: str):
     target_symbols = json.loads(symbols)
+    if not target_symbols or len(target_symbols) == 0:
+        raise DataReqError('symbols')
 
-    req_data_realtime(target_symbols)
+    try:
+        req_data_realtime(target_symbols)
 
-    orders = ([], [])
+        orders = ([], [])
 
-    for symbol in target_symbols:
-        if symbol not in OBJ_ASSETS:
-            OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
+        for symbol in target_symbols:
+            if symbol not in OBJ_ASSETS:
+                OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
 
-        obj_symbol = OBJ_ASSETS[symbol]
-        if obj_symbol.check_data():
-            result = getNewPosition_Manual_v1(obj_symbol)
-            if result[0]:
-                orders[0].append(symbol)
-                orders[1].append('buy')
-            elif result[1]:
-                orders[0].append(symbol)
-                orders[1].append('sell')
+            obj_symbol = OBJ_ASSETS[symbol]
+            if obj_symbol.check_data():
+                result = getNewPosition_Manual_v1(obj_symbol)
+                if result[0]:
+                    orders[0].append(symbol)
+                    orders[1].append('buy')
+                elif result[1]:
+                    orders[0].append(symbol)
+                    orders[1].append('sell')
 
-    makeOrders_Manual_v1(orders=orders, obj_assets=OBJ_ASSETS)
+        makeOrders_Manual_v1(orders=orders, obj_assets=OBJ_ASSETS)
 
-    return JSONResponse(
-        content={"message": "success"},
-        status_code=200,
-    )
+        return JSONResponse(
+            content={"message": "success"},
+            status_code=200,
+        )
+
+    except CustomError as e:
+        raise e
+    except:
+        print(traceback.format_exc())
+
+        raise CustomError(
+            status_code=500,
+            message='Internal server error',
+            detail='making a list for new orders'
+        )
 
 @app.get('/logs')
 def get_logs():
@@ -127,6 +159,9 @@ def get_setting_values(symbol: str):
 
 @app.put('/settings/{symbol}')
 def set_setting_values(symbol: str, args: object = Body(embed=True)):
+    if len(args.keys()) == 0:
+        raise DataReqError('args')
+
     if symbol not in OBJ_ASSETS:
         OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
     asset = OBJ_ASSETS[symbol]

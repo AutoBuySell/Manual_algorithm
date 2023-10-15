@@ -30,6 +30,7 @@ class Equity_Manual_v1():
 
         self.data_path = PATH_MARKET_DATA + self.symbol + '.csv'
 
+        # loading setting values
         if os.path.isfile(PATH_SETTING_DATA + self.symbol + '_settings.json'):
             with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'r') as fp:
                 self.settings = json.load(fp)
@@ -39,14 +40,18 @@ class Equity_Manual_v1():
                 self.settings = json.load(fp)['default']
             self.set()
 
+        # loading historical data values
         self.load_data() # Initialize self.data
 
     def __repr__(self) -> str:
         return '{' + f'symbol: {self.symbol}, settings: {self.settings}' + '}'
 
-    def check_data(
-        self,
-    ) -> None:
+    def check_data(self) -> bool:
+        '''
+        갱신된 실시간 데이터가 있는지 확인하고, 있다면 업데이트
+        Check if there is new data, and then update
+        '''
+
         if os.path.isfile(self.data_path):
             if self.data is not None:
                 temp_data_pd = pd.read_csv(self.data_path)
@@ -60,9 +65,7 @@ class Equity_Manual_v1():
 
         return False
 
-    def load_data(
-        self,
-    ) -> None:
+    def load_data(self) -> None:
         if os.path.isfile(self.data_path):
             self.data = pd.read_csv(self.data_path)
         else:
@@ -71,10 +74,11 @@ class Equity_Manual_v1():
 
         self.start_point = 0
 
-    def set(
-        self,
-        **args,
-    ) -> None:
+    def set(self, **args) -> None:
+        '''
+        Apply and save new setting values
+        '''
+
         for key, val in args.items():
             if key in self.settings:
                 self.settings[key] = val
@@ -82,7 +86,11 @@ class Equity_Manual_v1():
         with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'w', encoding='utf-8') as fp:
             json.dump(self.settings, fp, indent='\t', ensure_ascii=False)
 
-def get_default_settings():
+def get_default_settings() -> dict:
+    '''
+    Get default settings including default values, ranges, and types
+    '''
+
     with open(PATH_DEFAULT_SETTING, 'r') as fp:
         settings = json.load(fp)
 
