@@ -23,7 +23,7 @@ def get_buy_power() -> float:
   try:
     response = requests.get(baseurl + '/account', headers=headers)
 
-    assert response.status_code == 200, response.message
+    assert response.status_code == 200, response.json()
 
     response = response.json()
 
@@ -46,7 +46,7 @@ def get_current_positions() -> dict[float]:
   try:
     response = requests.get(baseurl + '/positions', headers=headers)
 
-    assert response.status_code == 200, response.message
+    assert response.status_code == 200, response.json()
 
     response = response.json()
 
