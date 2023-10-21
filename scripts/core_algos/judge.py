@@ -2,7 +2,7 @@ import numpy as np
 import traceback
 
 from apps.error import CustomError
-from scripts.assets import Equity_Manual_v1
+from .assets import Equity_Manual_v1
 
 def getNewPosition_Manual_v1(asset: Equity_Manual_v1, test_end_point: int = 0) -> tuple[bool]:
   '''

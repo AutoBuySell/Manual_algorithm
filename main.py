@@ -7,7 +7,7 @@ import json
 
 from apps.error import CustomError, DataReqError
 
-from scripts.assets import Equity_Manual_v1, get_default_settings
+from scripts.core_algos.assets import Equity_Manual_v1, get_default_settings
 from scripts.log import get_order_log, update_order_log
 from scripts.execute import judge_and_order
 

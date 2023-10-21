@@ -3,9 +3,9 @@ import traceback
 
 from apps.error import CustomError
 
-from scripts.assets import Equity_Manual_v1 as ASSETCLASS
-from scripts.judge import getNewPosition_Manual_v1 as JUDGEFUNC
-from scripts.order import makeOrders_Manual_v1 as ORDERFUNC
+from scripts.core_algos.assets import Equity_Manual_v1 as ASSETCLASS
+from scripts.core_algos.judge import getNewPosition_Manual_v1 as JUDGEFUNC
+from scripts.core_algos.order import makeOrders_Manual_v1 as ORDERFUNC
 
 from apis.alpaca.infos import get_current_positions
 from apis.alpaca.orders import create_order
@@ -62,5 +62,5 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
     raise CustomError(
       status_code=500,
       message='Internal server error',
-      detail='making a list for new orders'
+      detail='judging and ordering'
     )

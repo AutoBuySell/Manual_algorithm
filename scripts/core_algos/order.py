@@ -1,7 +1,7 @@
 import traceback
 
 from apps.error import CustomError
-from scripts.assets import Equity_Manual_v1
+from .assets import Equity_Manual_v1
 
 def makeOrders_Manual_v1(asset: Equity_Manual_v1, side: str, currentPrice: float) -> tuple[bool | int]:
   '''
@@ -11,6 +11,7 @@ def makeOrders_Manual_v1(asset: Equity_Manual_v1, side: str, currentPrice: float
 
   try:
     isOrder = False
+    qty = 0
 
     symbol = asset.symbol
 
