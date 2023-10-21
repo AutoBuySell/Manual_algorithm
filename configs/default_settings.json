@@ -1,14 +1,15 @@
 {
   "default": {
-    "thr_buy": 0.1,
-    "thr_sell": 0.1,
+    "thr_buy": 0.05,
+    "thr_sell": 0.05,
     "duration": 24,
     "thr_grad": 0.02,
     "rebound": 0,
     "limit": 1000,
     "thr_release": 0.1,
     "reb_release": 0,
-    "data_interval": "5m"
+    "data_interval": "30Min",
+    "max_value": 1000
   },
   "types": {
     "thr_buy": "float",
@@ -19,7 +20,8 @@
     "limit": "int",
     "thr_release": "float",
     "reb_release": "float",
-    "data_interval": "select"
+    "data_interval": "select",
+    "max_value": "float"
   },
   "ranges": {
     "thr_buy": {
@@ -53,6 +55,10 @@
       "min": 0,
       "max": 1
     },
-    "data_interval": ["5m", "15m", "30m", "1h"]
+    "data_interval": ["5Min", "15Min", "30Min", "1Hour"],
+    "max_value": {
+      "min": 0,
+      "max": 100000
+    }
   }
 }

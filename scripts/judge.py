@@ -1,13 +1,7 @@
 import numpy as np
-from datetime import datetime
 import traceback
 
 from apps.error import CustomError
-
-from apis.alpaca.infos import get_buy_power, get_current_positions
-from apis.alpaca.orders import create_order
-
-from scripts.log import create_order_log
 from scripts.assets import Equity_Manual_v1
 
 def getNewPosition_Manual_v1(asset: Equity_Manual_v1, test_end_point: int = 0) -> tuple[bool]:
@@ -53,55 +47,4 @@ def getNewPosition_Manual_v1(asset: Equity_Manual_v1, test_end_point: int = 0) -
       status_code=500,
       message='Internal server error',
       detail='calculating new position'
-    )
-
-def makeOrders_Manual_v1(orders: tuple[list[str]], obj_assets: dict[Equity_Manual_v1]) -> None:
-  '''
-  orders: (list of symbols to order, list of 'buy' or 'sell' orders per asset)
-  obj_assets: dict of asset objects
-  '''
-
-  try:
-    symbols, sides = orders
-
-    buy_power = get_buy_power()
-    current_positions = get_current_positions()
-
-    print(datetime.today().isoformat())
-    print('buy_power: ', buy_power)
-    print('current_positions: ', current_positions)
-    print('new orders: ', orders)
-
-    for i in range(len(symbols)):
-      symbol = symbols[i]
-      if sides[i] == 'sell':
-        if symbol in current_positions:
-          data_np = np.array(obj_assets[symbol].data['o'])
-          current_price = data_np[-1]
-          qty = current_positions[symbol]
-
-          orderInfo = create_order('sell', symbol, qty)
-          create_order_log(orderInfo['orderId'], 'sell', symbol, qty, current_price)
-          print('sell: ', symbol, ', qty: ', qty, ', price: ', current_price)
-      else:
-        data_np = np.array(obj_assets[symbol].data['o'])
-        current_price = data_np[-1]
-        qty = int((buy_power / 5) / current_price)
-
-        orderInfo = create_order('buy', symbol, qty)
-        create_order_log(orderInfo['orderId'], 'buy', symbol, qty, current_price)
-        print('buy: ', symbol, ', qty: ', qty, ', price: ', current_price)
-
-        buy_power = buy_power - buy_power / 5
-
-  except CustomError as e:
-    raise e
-
-  except:
-    print(traceback.format_exc())
-
-    raise CustomError(
-      status_code=500,
-      message='Internal server error',
-      detail='making orders'
     )

@@ -4,15 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body
 
 import json
-import traceback
 
 from apps.error import CustomError, DataReqError
 
 from scripts.assets import Equity_Manual_v1, get_default_settings
-from scripts.judge import getNewPosition_Manual_v1, makeOrders_Manual_v1
 from scripts.log import get_order_log, update_order_log
-
-from apis.data.data import req_data_realtime
+from scripts.execute import judge_and_order
 
 tags_metadata = [
     {
@@ -69,42 +66,12 @@ def check_update_and_decide(symbols: str):
     if not target_symbols or len(target_symbols) == 0:
         raise DataReqError('symbols')
 
-    try:
-        req_data_realtime(target_symbols)
+    judge_and_order(OBJ_ASSETS=OBJ_ASSETS, symbols=target_symbols)
 
-        orders = ([], [])
-
-        for symbol in target_symbols:
-            if symbol not in OBJ_ASSETS:
-                OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
-
-            obj_symbol = OBJ_ASSETS[symbol]
-            if obj_symbol.check_data():
-                result = getNewPosition_Manual_v1(obj_symbol)
-                if result[0]:
-                    orders[0].append(symbol)
-                    orders[1].append('buy')
-                elif result[1]:
-                    orders[0].append(symbol)
-                    orders[1].append('sell')
-
-        makeOrders_Manual_v1(orders=orders, obj_assets=OBJ_ASSETS)
-
-        return JSONResponse(
-            content={"message": "success"},
-            status_code=200,
-        )
-
-    except CustomError as e:
-        raise e
-    except:
-        print(traceback.format_exc())
-
-        raise CustomError(
-            status_code=500,
-            message='Internal server error',
-            detail='making a list for new orders'
-        )
+    return JSONResponse(
+        content={"message": "success"},
+        status_code=200,
+    )
 
 @app.get('/logs')
 def get_logs():

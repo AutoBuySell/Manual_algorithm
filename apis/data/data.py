@@ -10,30 +10,31 @@ load_dotenv(verbose=True)
 dataServerUrl = os.getenv('DATA_SERVER_URL')
 
 headers = {
-    'accept': 'application/json',
+  'accept': 'application/json',
 }
 
-def req_data_realtime(symbols):
-    '''
-    Request to data server to update and response with updated data
-    '''
+def req_data_realtime(symbol, timeframe):
+  '''
+  Request to data server to update and response with updated data
+  '''
 
-    try:
-      response = requests.post(
-          url=dataServerUrl + '/dataArchiving/real_time',
-          headers=headers,
-          json={
-              'symbols': symbols,
-          }
-      )
+  try:
+    response = requests.post(
+      url=dataServerUrl + '/dataArchiving/real_time',
+      headers=headers,
+      json={
+        'symbols': [symbol],
+        'timeframe': timeframe
+      }
+    )
 
-      assert response.status_code == 201, response.message
+    assert response.status_code == 201, response.json()
 
-    except:
-       print(traceback.format_exc())
+  except:
+    print(traceback.format_exc())
 
-       raise CustomError(
-          status_code=500,
-          message='Internal server error',
-          detail='requesting real-data from data server'
-       )
+    raise CustomError(
+      status_code=500,
+      message='Internal server error',
+      detail='requesting real-data from data server'
+    )

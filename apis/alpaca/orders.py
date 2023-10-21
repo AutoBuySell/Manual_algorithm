@@ -40,7 +40,7 @@ def create_order(side: str, symbol: str, qty: int) -> dict:
       headers=headers
     )
 
-    assert response.status_code == 200, response.message
+    assert response.status_code == 200, response.json()
 
     response = response.json()
 
@@ -72,7 +72,7 @@ def get_order(orderId: str) -> dict:
       headers=headers
     )
 
-    assert response.ststus_code == 200, response.message
+    assert response.ststus_code == 200, response.json()
 
     response = response.json()
 
