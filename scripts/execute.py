@@ -10,7 +10,7 @@ from scripts.core_algos.order import makeOrders_Manual_v1 as ORDERFUNC
 from apis.alpaca.infos import get_current_positions
 from apis.alpaca.orders import create_order
 
-from scripts.log import create_order_log
+from scripts.log import create_order_log, create_error_log
 
 def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
 
@@ -64,3 +64,6 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
       message='Internal server error',
       detail='judging and ordering'
     )
+
+  finally:
+    create_error_log(traceback.format_exc())
