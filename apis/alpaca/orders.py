@@ -72,7 +72,7 @@ def get_order(orderId: str) -> dict:
       headers=headers
     )
 
-    assert response.ststus_code == 200, response.json()
+    assert response.status_code == 200, response.json()
 
     response = response.json()
 
