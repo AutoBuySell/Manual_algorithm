@@ -31,6 +31,7 @@ def req_data_realtime(symbol, timeframe):
     assert response.status_code == 201, response.json()
 
   except:
+    print('symbol: ', symbol)
     print(traceback.format_exc())
 
     raise CustomError(
