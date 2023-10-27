@@ -94,7 +94,7 @@ class Equity_Manual_v1():
             json.dump(self.settings, fp, indent='\t', ensure_ascii=False)
 
     def update_buy_power(self, current_position: float):
-        currentPrice = self.data['o'][-1]
+        currentPrice = self.data['o'].iloc[-1]
         currentValue = current_position * currentPrice
 
         self.current_position = current_position
