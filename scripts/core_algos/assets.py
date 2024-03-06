@@ -3,13 +3,15 @@ import json
 import os
 from dotenv import load_dotenv
 
+from apis.alpaca.infos import get_infos, get_current_positions
+
 load_dotenv(verbose=True)
 
 PATH_MARKET_DATA = os.getenv('PATH_MARKET_DATA')
 PATH_SETTING_DATA = os.getenv('PATH_SETTING_DATA')
 PATH_DEFAULT_SETTING = os.getenv('PATH_DEFAULT_SETTING')
 
-class Equity_Manual_v1():
+class Equity_Manual_v2():
     '''
     Equity class has its own history and properties for deciding to open or close positions of a specific stock.
 
@@ -21,7 +23,7 @@ class Equity_Manual_v1():
             * thr_grad: minimum average of gradient to decide buy or sell
             * rebound: gradient of change as a trigger of action
             * limit: maximum amount of total value per action
-            * max_value: maximum amount of sum of buy_power and positions
+            * target_value: target value to decide to enhance or diminish the order amount
     '''
     def __init__(
         self,
@@ -32,11 +34,12 @@ class Equity_Manual_v1():
         self.start_point = 0
 
         # loading setting values
+        self.settings = None
         if os.path.isfile(PATH_SETTING_DATA + self.symbol + '_settings.json'):
             with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'r') as fp:
                 self.settings = json.load(fp)
         else:
-            print('[Warning]', self.symbol, 'has no setting files. The default settings will be used instead.')
+            print(f'[Warning] ${self.symbol} has no setting files. The default settings will be used instead.')
             with open(PATH_DEFAULT_SETTING, 'r') as fp:
                 self.settings = json.load(fp)['default']
             self.set()
@@ -47,11 +50,12 @@ class Equity_Manual_v1():
         # loading historical data values
         self.load_data() # Initialize self.data
 
-        self.buy_power = self.settings['max_value']
+        self.value_diff = self.settings['target_value']
         self.current_position = 0
+        self.account_info = {}
 
     def __repr__(self) -> str:
-        return '{' + f'symbol: {self.symbol}, settings: {self.settings}' + '}'
+        return 'ASSET variable {' + f'symbol: {self.symbol}, settings: {self.settings}' + '}'
 
     def check_data(self) -> bool: # must required method
         '''
@@ -77,7 +81,7 @@ class Equity_Manual_v1():
             self.data = pd.read_csv(self.data_path)
         else:
             self.data = None
-            print('No data available!')
+            print(f'[Warning] ${self.symbol} has no data available.')
 
         self.start_point = 0
 
@@ -93,12 +97,22 @@ class Equity_Manual_v1():
         with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'w', encoding='utf-8') as fp:
             json.dump(self.settings, fp, indent='\t', ensure_ascii=False)
 
-    def update_buy_power(self, current_position: float):
-        currentPrice = self.data['o'].iloc[-1]
-        currentValue = current_position * currentPrice
+    def update_before_order(self):
+        # update asset states
+        self._update_asset_states()
 
-        self.current_position = current_position
-        self.buy_power = self.settings['max_value'] - currentValue
+        # update account states
+        self._update_account_states()
+
+    def _update_asset_states(self) -> None:
+        self.current_position = get_current_positions(symbols=[self.symbol])
+        currentPrice = self.data['o'][-1]
+        currentValue = self.current_position * currentPrice
+        self.value_diff = self.settings['target_value'] - currentValue
+
+    def _update_account_states(self) -> None:
+        infos = get_infos()
+        self.account_info['buy_power'] = float(infos['buy_power'])
 
 def get_default_settings() -> dict:
     '''

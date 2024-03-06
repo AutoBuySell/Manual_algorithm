@@ -15,9 +15,9 @@ headers = {
   'APCA-API-SECRET-KEY': os.getenv('ALPACA_PAPER_KEY_SECRET'),
 }
 
-def get_buy_power() -> float:
+def get_infos() -> float:
   '''
-  return current buy power
+  return current account information including buy_power
   '''
 
   try:
@@ -27,7 +27,7 @@ def get_buy_power() -> float:
 
     response = response.json()
 
-    return float(response['buying_power'])
+    return response
 
   except:
     print(traceback.format_exc())
@@ -35,10 +35,10 @@ def get_buy_power() -> float:
     raise CustomError(
       status_code=500,
       message='Internal server error',
-      detail='getting current buying power'
+      detail='getting current infos'
     )
 
-def get_current_positions() -> dict[float]:
+def get_current_positions(symbols: list = []) -> dict[float]:
   '''
   return a dict of current long positions with symbols as key
   '''
@@ -50,7 +50,10 @@ def get_current_positions() -> dict[float]:
 
     response = response.json()
 
-    return {r['symbol']: float(r['qty']) for r in response if r['side'] == 'long'}
+    if len(symbols) == 0:
+      return {r['symbol']: float(r['qty']) for r in response if r['side'] == 'long'}
+
+    return {r['symbol']: float(r['qty']) for r in response if r['symbol'] in symbols and r['side'] == 'long'}
 
   except:
     print(traceback.format_exc())

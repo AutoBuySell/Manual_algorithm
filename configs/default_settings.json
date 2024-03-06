@@ -9,7 +9,7 @@
     "thr_release": 0.1,
     "reb_release": 0,
     "data_interval": "30Min",
-    "max_value": 1000
+    "target_value": 1000
   },
   "types": {
     "thr_buy": "float",
@@ -21,7 +21,7 @@
     "thr_release": "float",
     "reb_release": "float",
     "data_interval": "select",
-    "max_value": "float"
+    "target_value": "float"
   },
   "ranges": {
     "thr_buy": {
@@ -56,7 +56,7 @@
       "max": 1
     },
     "data_interval": ["5Min", "15Min", "30Min", "1Hour"],
-    "max_value": {
+    "target_value": {
       "min": 0,
       "max": 100000
     }
