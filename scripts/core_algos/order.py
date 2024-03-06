@@ -1,44 +1,42 @@
 import traceback
 
 from apps.error import CustomError
-from .assets import Equity_Manual_v1
+from .assets import Equity_Manual_v2
 
-def makeOrders_Manual_v1(asset: Equity_Manual_v1, side: str, currentPrice: float) -> tuple[bool | int]:
-  '''
-  orders: (list of symbols to order, list of 'buy' or 'sell' orders per asset)
-  obj_assets: dict of asset objects
-  '''
+def makeOrders_Manual_v2(asset: Equity_Manual_v2, side: str, confidence: float) -> tuple[bool | int]:
+    '''
+    orders: (list of symbols to order, list of 'buy' or 'sell' orders per asset)
+    obj_assets: dict of asset objects
+    '''
 
-  try:
-    isOrder = False
-    qty = 0
+    try:
+        is_order = False
+        qty = 0
 
-    symbol = asset.symbol
+        target_value = asset.settings['target_value']
+        value_diff = asset.value_diff
+        buy_power = asset.account_info['buy_power']
+        current_position = asset.current_position
+        current_price = asset.data['o'].iloc[-1]
 
-    buy_power = asset.buy_power
-    current_position = asset.current_position
+        if side == 'sell' and current_position > 0:
+            amount = pow(2, - value_diff / target_value) * confidence * (target_value / 5)
+            qty = amount // current_price
+            is_order = True
 
-    if side == 'sell' and current_position > 0:
-      qty = int(current_position / 3) if current_position >= 3 else current_position
-      if qty > 0:
-        isOrder = True
+        elif side == 'buy':
+            amount = pow(2, value_diff / target_value) * confidence * (target_value / 5)
+            amount = min(amount, buy_power)
+            qty = amount // current_price
+            is_order = True
 
-      print('sell: ', symbol, ', qty: ', qty, ', price: ', currentPrice)
+        return is_order, qty
 
-    elif side == 'buy' and buy_power > 0:
-      qty = int(buy_power / 3 / currentPrice)
-      if qty > 0:
-        isOrder = True
+    except:
+        print(traceback.format_exc())
 
-      print('buy: ', symbol, ', qty: ', qty, ', price: ', currentPrice)
-
-    return isOrder, qty
-
-  except:
-    print(traceback.format_exc())
-
-    raise CustomError(
-      status_code=500,
-      message='Internal server error',
-      detail='making orders'
-    )
+        raise CustomError(
+        status_code=500,
+        message='Internal server error',
+        detail='making orders'
+        )

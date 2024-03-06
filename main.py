@@ -7,7 +7,7 @@ import json
 
 from apps.error import CustomError, DataReqError
 
-from scripts.core_algos.assets import Equity_Manual_v1, get_default_settings
+from scripts.core_algos.assets import Equity_Manual_v2, get_default_settings
 from scripts.log import get_order_log, update_order_log
 from scripts.execute import judge_and_order
 
@@ -113,7 +113,7 @@ def get_setting_lists():
 @app.get('/settings/{symbol}')
 def get_setting_values(symbol: str):
     if symbol not in OBJ_ASSETS:
-        OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
+        OBJ_ASSETS[symbol] = Equity_Manual_v2(symbol)
     asset = OBJ_ASSETS[symbol]
 
     return JSONResponse(
@@ -130,7 +130,7 @@ def set_setting_values(symbol: str, args: object = Body(embed=True)):
         raise DataReqError('args')
 
     if symbol not in OBJ_ASSETS:
-        OBJ_ASSETS[symbol] = Equity_Manual_v1(symbol)
+        OBJ_ASSETS[symbol] = Equity_Manual_v2(symbol)
     asset = OBJ_ASSETS[symbol]
 
     asset.set(**args)
