@@ -39,7 +39,7 @@ class Equity_Manual_v2():
             with open(PATH_SETTING_DATA + self.symbol + '_settings.json', 'r') as fp:
                 self.settings = json.load(fp)
         else:
-            print(f'[Warning] ${self.symbol} has no setting files. The default settings will be used instead.')
+            print(f'[Warning] {self.symbol} has no setting files. The default settings will be used instead.')
             with open(PATH_DEFAULT_SETTING, 'r') as fp:
                 self.settings = json.load(fp)['default']
             self.set()
@@ -81,7 +81,7 @@ class Equity_Manual_v2():
             self.data = pd.read_csv(self.data_path)
         else:
             self.data = None
-            print(f'[Warning] ${self.symbol} has no data available.')
+            print(f'[Warning] {self.symbol} has no data available.')
 
         self.start_point = 0
 
@@ -105,14 +105,15 @@ class Equity_Manual_v2():
         self._update_account_states()
 
     def _update_asset_states(self) -> None:
-        self.current_position = get_current_positions(symbols=[self.symbol])
-        currentPrice = self.data['o'][-1]
+        all_positions = get_current_positions(symbols=[self.symbol])
+        self.current_position = all_positions[self.symbol] if self.symbol in all_positions else 0
+        currentPrice = self.data['o'].iloc[-1]
         currentValue = self.current_position * currentPrice
         self.value_diff = self.settings['target_value'] - currentValue
 
     def _update_account_states(self) -> None:
         infos = get_infos()
-        self.account_info['buy_power'] = float(infos['buy_power'])
+        self.account_info['buying_power'] = float(infos['buying_power'])
 
 def get_default_settings() -> dict:
     '''

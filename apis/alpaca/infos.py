@@ -17,7 +17,7 @@ headers = {
 
 def get_infos() -> float:
   '''
-  return current account information including buy_power
+  return current account information including buying_power
   '''
 
   try:

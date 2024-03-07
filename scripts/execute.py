@@ -7,7 +7,6 @@ from scripts.core_algos.judge import getNewPosition_Manual_v2 as JUDGEFUNC
 from scripts.core_algos.order import makeOrders_Manual_v2 as ORDERFUNC
 
 from apis.data.data import req_data_realtime
-from apis.alpaca.infos import get_current_positions
 from apis.alpaca.orders import create_order
 
 from scripts.log import create_order_log, create_error_log
@@ -15,8 +14,6 @@ from scripts.log import create_order_log, create_error_log
 def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
 
   try:
-    positions = get_current_positions(symbols=symbols)
-
     for symbol in symbols:
       if symbol not in OBJ_ASSETS:
         OBJ_ASSETS[symbol] = ASSETCLASS(symbol)
@@ -27,11 +24,11 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
       if asset.check_data():
         buySig, sellSig, confidence = JUDGEFUNC(asset)
         currentPrice = asset.data['o'].iloc[-1]
-        position = positions[symbol] if symbol in positions else 0
 
         if buySig:
           isOrder, qty = ORDERFUNC(asset=asset, side='buy', confidence=confidence)
           if isOrder:
+            print('buy', symbol, isOrder, qty)
             orderResults = create_order(side='buy', symbol=symbol, qty=qty)
             create_order_log(
               orderId=orderResults['orderId'],
@@ -44,6 +41,7 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
         elif sellSig:
           isOrder, qty = ORDERFUNC(asset=asset, side='sell', confidence=confidence)
           if isOrder:
+            print('sell', symbol, isOrder, qty)
             orderResults = create_order(side='sell', symbol=symbol, qty=qty)
             create_order_log(
               orderId=orderResults['orderId'],
