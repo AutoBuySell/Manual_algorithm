@@ -106,7 +106,7 @@ class Equity_Manual_v2():
 
     def _update_asset_states(self) -> None:
         all_positions = get_current_positions(symbols=[self.symbol])
-        self.current_position = all_positions[self.symbol] if self.symbol in all_positions else 0
+        self.current_position = all_positions[self.symbol]['qty'] if self.symbol in all_positions else 0
         currentPrice = self.data['o'].iloc[-1]
         currentValue = self.current_position * currentPrice
         self.value_diff = self.settings['target_value'] - currentValue

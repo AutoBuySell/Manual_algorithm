@@ -58,37 +58,3 @@ def create_order(side: str, symbol: str, qty: int) -> dict:
       message='Internal server error',
       detail=f'creating an {side}ing order'
     )
-
-def get_order(orderId: str) -> dict:
-  '''
-  특정 id 의 주문 정보 요청, 해당 주문의 status(주문상태), filledQty(실행주문수), filledAvgPrice(실행평균가) 반환
-  Request order infomation of an orderId
-  Return status, filledQty, filledAvgPrice infomation of the order
-  '''
-
-  try:
-    response = requests.get(
-      baseurl + '/orders' + f'/{orderId}',
-      headers=headers
-    )
-
-    assert response.status_code == 200, response.json()
-
-    response = response.json()
-
-    new_info = {
-      'status': response['status'],
-      'filledQty': response['filled_qty'],
-      'filledAvgPrice': response['filled_avg_price'] or 0,
-    }
-
-    return new_info
-
-  except:
-    print(traceback.format_exc())
-
-    CustomError(
-      status_code=500,
-      message='Internal server error',
-      detail='getting an order information'
-    )

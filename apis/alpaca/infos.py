@@ -15,7 +15,7 @@ headers = {
   'APCA-API-SECRET-KEY': os.getenv('ALPACA_PAPER_KEY_SECRET'),
 }
 
-def get_infos() -> float:
+def get_infos():
   '''
   return current account information including buying_power
   '''
@@ -41,6 +41,7 @@ def get_infos() -> float:
 def get_current_positions(symbols: list = []) -> dict[float]:
   '''
   return a dict of current long positions with symbols as key
+  , only if the symbol is in the portfolio
   '''
 
   try:
@@ -51,9 +52,19 @@ def get_current_positions(symbols: list = []) -> dict[float]:
     response = response.json()
 
     if len(symbols) == 0:
-      return {r['symbol']: float(r['qty']) for r in response if r['side'] == 'long'}
+      return {
+        r['symbol']: {
+          'qty': float(r['qty']),
+          'position': r['side'],
+         } for r in response
+      }
 
-    return {r['symbol']: float(r['qty']) for r in response if r['symbol'] in symbols and r['side'] == 'long'}
+    return {
+      r['symbol']: {
+        'qty': float(r['qty']),
+        'position': r['side'],
+        } for r in response if r['symbol'] in symbols
+    }
 
   except:
     print(traceback.format_exc())
