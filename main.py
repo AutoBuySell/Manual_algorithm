@@ -71,4 +71,4 @@ def check_update_and_decide(symbols: str):
         status_code=200,
     )
 
-app.mount('/settings', setting)
+app.include_router(setting, prefix='/settings')

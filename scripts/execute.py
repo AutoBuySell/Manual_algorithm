@@ -1,4 +1,5 @@
 import traceback
+from datetime import datetime
 
 from apps.error import CustomError
 
@@ -26,9 +27,12 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
         buySig, sellSig, confidence = JUDGEFUNC(asset)
         currentPrice = asset.data['o'].iloc[-1]
 
+        dt = datetime.utcnow().isoformat(timespec='milliseconds') + 'Z'
+
         if buySig:
           create_action_log({
             'action': 'judge',
+            'dateTime': dt,
             'symbol': symbol,
             'confidence': confidence,
             'orderSide': 'buy'
@@ -42,6 +46,7 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
             create_action_log({
               'action': 'order',
               'orderId': orderResults['orderId'],
+              'dateTime': dt,
               'symbol': symbol,
               'orderSide': 'buy',
               'orderQty': qty,
@@ -52,6 +57,7 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
         elif sellSig:
           create_action_log({
             'action': 'judge',
+            'dateTime': dt,
             'symbol': symbol,
             'confidence': confidence,
             'orderSide': 'sell'
@@ -65,6 +71,7 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
             create_action_log({
               'action': 'order',
               'orderId': orderResults['orderId'],
+              'dateTime': dt,
               'symbol': symbol,
               'orderSide': 'sell',
               'orderQty': qty,

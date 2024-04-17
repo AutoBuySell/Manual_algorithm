@@ -14,7 +14,7 @@ def create_error_log(content: str) -> None:
 
   try:
     new_log = {
-      'date': datetime.now().isoformat(timespec='milliseconds') + 'Z',
+      'date': datetime.utcnow().isoformat(timespec='milliseconds') + 'Z',
       'content': content
     }
 

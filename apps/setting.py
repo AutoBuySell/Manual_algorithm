@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body
+from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 
 from apps.error import DataReqError
@@ -7,7 +7,7 @@ from scripts.core_algos.assets import Equity_Manual_v2, get_default_settings
 
 from configs.objAssets import OBJ_ASSETS
 
-setting = FastAPI()
+setting = APIRouter()
 
 @setting.get('/')
 def get_setting_lists():
