@@ -1,20 +1,20 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Body
 
 import json
 
 from apps.error import CustomError, DataReqError
+from apps.setting import setting
 
-from scripts.core_algos.assets import Equity_Manual_v2, get_default_settings
-from scripts.log import get_order_log, update_order_log
 from scripts.execute import judge_and_order
+
+from configs.objAssets import OBJ_ASSETS
 
 tags_metadata = [
     {
-        "name": "Embedding Model",
-        "description": "모델 관련 API",
+        "name": "Backend Server with Model Embedding",
+        "description": "백엔드 모델 임베딩 서버",
     }
 ]
 
@@ -25,7 +25,7 @@ origins = [
 app = FastAPI(
     title="AutoTrading",
     summary="자동 알고리즘 매매 프로그램",
-    version="0.0.1",
+    version="0.0.2",
     openapi_tags=tags_metadata,
 )
 
@@ -36,8 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-OBJ_ASSETS = {}
 
 @app.exception_handler(CustomError)
 def custom_error_handler(request: Request, exc: CustomError):
@@ -73,72 +71,4 @@ def check_update_and_decide(symbols: str):
         status_code=200,
     )
 
-@app.get('/logs')
-def get_logs():
-    logs = get_order_log()
-
-    return JSONResponse(
-        content={
-            "message": "success",
-            "data": logs,
-        },
-        status_code=200,
-    )
-
-@app.put('/logs')
-def update_logs():
-    update_order_log()
-    logs = get_order_log()
-
-    return JSONResponse(
-        content={
-            "message": "success",
-            "data": logs,
-        },
-        status_code=200,
-    )
-
-@app.get('/settings')
-def get_setting_lists():
-    settings = get_default_settings()
-
-    return JSONResponse(
-        content={
-            "message": "success",
-            "data": settings,
-        },
-        status_code=200,
-    )
-
-@app.get('/settings/{symbol}')
-def get_setting_values(symbol: str):
-    if symbol not in OBJ_ASSETS:
-        OBJ_ASSETS[symbol] = Equity_Manual_v2(symbol)
-    asset = OBJ_ASSETS[symbol]
-
-    return JSONResponse(
-        content={
-            "message": "success",
-            "data": asset.settings,
-        },
-        status_code=200,
-    )
-
-@app.put('/settings/{symbol}')
-def set_setting_values(symbol: str, args: object = Body(embed=True)):
-    if len(args.keys()) == 0:
-        raise DataReqError('args')
-
-    if symbol not in OBJ_ASSETS:
-        OBJ_ASSETS[symbol] = Equity_Manual_v2(symbol)
-    asset = OBJ_ASSETS[symbol]
-
-    asset.set(**args)
-
-    return JSONResponse(
-        content={
-            "message": "success",
-            "data": asset.settings,
-        },
-        status_code=200,
-    )
+app.include_router(setting, prefix='/settings')
