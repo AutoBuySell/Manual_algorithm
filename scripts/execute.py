@@ -43,6 +43,9 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
             print('buy', symbol, isOrder, qty)
             orderResults = create_order(side='buy', symbol=symbol, qty=qty)
 
+            # If an order has been excuted, renew start_point
+            asset.start_point = len(asset.data['o']) - 2
+
             create_action_log({
               'action': 'order',
               'orderId': orderResults['orderId'],
@@ -67,6 +70,9 @@ def judge_and_order(OBJ_ASSETS: dict, symbols: list[str]) -> None:
           if isOrder:
             print('sell', symbol, isOrder, qty)
             orderResults = create_order(side='sell', symbol=symbol, qty=qty)
+
+            # If an order has been excuted, renew start_point
+            asset.start_point = len(asset.data['o']) - 2
 
             create_action_log({
               'action': 'order',
